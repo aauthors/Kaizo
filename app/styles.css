@@ -6,6 +6,7 @@
     display: flex; 
     justify-content: center;
     align-items: center; 
+    font: 1.2em sans-serif; 
 }
 
 .container {
@@ -18,4 +19,26 @@
     align-items: center; 
     justify-content: center; 
 
+}
+
+.rounded-button {
+    border: 2px solid rgb(75 70 74);
+    border-radius: 0.5em; 
+    font: 1.2em sans-serif; 
+    padding: 0.5em;
+}
+
+.page-background {
+    background: rgb(136, 133, 133);
+}
+
+.padding-standard {
+    padding: 1em;
+    gap: 10px;
+}
+
+.center {
+    display: flex; 
+    justify-content: center; 
+    align-items: center;
 }
