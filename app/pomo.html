@@ -9,9 +9,23 @@
 </head>
 
 <body>
-    <h1 class="header">Pomodoro Timer</h1>
-    <div class="center clock-container">
-        <h1 id="clock"></h1>
+    <div class="center padding-standard">
+        <h1 class="center">
+            Pomodoro Timer
+        </h1>
+    </div>
+    <div class="center padding-standard">
+        <h2 class="center">
+            Current Time:
+        </h2>
+        <h3 class="center padding-standard" id="clock"></h3>
+    </div>
+    <div>
+        <h2 class="center padding-standard clock-container" id="timer-30">
+            <button class="rounded-button padding-standard" onclick="startTimer('timer-30')">
+                <p class="timer-text">30:00</p>
+            </button>
+        </h2>
     </div>
     <div class="center padding-standard">
         <button id="goToHomePage" class="rounded-button padding-standard" onclick="goToHomePage()">Back</button>
