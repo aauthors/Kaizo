@@ -16,11 +16,11 @@ function changeNoText() {
 }
 
 function goToPomo() {
-    window.location.href = "./pomo.html";
+    window.location.href = "../pages/pomo.html";
 }
 
 function goToHomePage() {
-    window.location.href = "./index.html";
+    window.location.href = "../pages/index.html";
 }
 
 function timer30() {
@@ -62,5 +62,3 @@ function updateClock() {
 // show time immediately and then update every second
 updateClock();
 setInterval(updateClock, 1000);
-timer30();
-setInterval(timer30, 1000); 

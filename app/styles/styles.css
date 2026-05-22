@@ -23,6 +23,10 @@
 }
 
 .rounded-button {
+    &:hover {
+        background-color: rgb(75 70 74);
+        color: white;
+    }
     border: 2px solid rgb(75 70 74);
     border-radius: 0.5em; 
     font: 1.2em sans-serif; 

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../styles/styles.css">
+    <title>Pomodoro Timer</title>
+</head>
+
+<body>
+    <div class="center">
+        <h1 class="center">
+            Pomodoro Timer
+        </h1>
+    </div>
+    <div class="center">
+        <h2 class="center">
+            Current Time:
+        </h2>
+        <h3 class="center" id="clock"></h3>
+    </div>
+    <div>
+        <h2 class="center padding-standard clock-container" id="timer-30">
+            <p id="timer-30-display" class="timer-30">30:00</p>
+        </h2>
+    </div>
+    <div>
+
+        <div style="display:flex;gap:7px;justify-content:center;">
+            <button id="startTimer29" class="rounded-button padding-standard" onclick="startTimer()">Start</button>
+            <button id="pauseTimer29" class="rounded-button padding-standard" onclick="pauseTimer()">Pause</button>
+            <button id="resetTimer29" class="rounded-button padding-standard" onclick="resetTimer()">Reset</button>
+        </div>
+    </div>
+    <div class="center padding-standard">
+        <button id="goToHomePage" class="rounded-button padding-standard" onclick="goToHomePage()">Back</button>
+    </div>
+    <script src="../scripts/scripts.js"></script>
+    <script src="../scripts/pomodoro.js"></script>
+</body>
+
+</html>
