@@ -1,104 +1,89 @@
-// Pomodoro timer (interval-based)
-var pomodoroRemaining = 30 * 60; // seconds
-var pomodoroIntervalId = null;
-
-// Try to load pure core logic (works in Node tests) or use browser-global
-var core;
+// UI layer: wires Timer to DOM and exposes global control functions used by the markup
+var TimerClass = null;
 if (typeof module !== 'undefined' && module.exports) {
-    try { core = require('./pomodoroCore'); } catch (e) { core = null; }
+    try { TimerClass = require('./pomodoroTimer'); } catch (e) { TimerClass = null; }
 }
-if (!core && typeof window !== 'undefined' && window.pomodoroCore) core = window.pomodoroCore;
-if (!core) {
-    core = {
-        formatTime: function (seconds) { var m = Math.floor(seconds / 60); var s = seconds % 60; return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0'); },
-        tick: function (secondsRemaining) { var s = Math.max(0, Math.floor(secondsRemaining)); if (s <= 0) return 0; return s - 1; }
-    };
+if (!TimerClass && typeof window !== 'undefined') TimerClass = window.PomodoroTimer;
+
+// formatting helper (uses pomodoroCore if available)
+var formatter = null;
+if (typeof module !== 'undefined' && module.exports) {
+    try { formatter = require('./pomodoroCore'); } catch (e) { formatter = null; }
+}
+if (!formatter && typeof window !== 'undefined' && window.pomodoroCore) formatter = window.pomodoroCore;
+if (!formatter) {
+    formatter = { formatTime: function (s) { var m = Math.floor(s / 60); var sec = s % 60; return String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0'); } };
 }
 
-function getPomodoroDisplay() {
+var timer = null;
+
+function getDisplay() {
     return document.getElementById('timer-30-display') || document.querySelector('#timer-30 .timer-30') || document.getElementById('timer-30');
 }
 
-function updatePomodoroDisplay() {
-    var el = getPomodoroDisplay();
+function updateDisplay(seconds) {
+    var el = getDisplay();
     if (!el) return;
-    el.innerHTML = core.formatTime(Math.max(0, pomodoroRemaining));
+    el.innerHTML = formatter.formatTime(Math.max(0, seconds));
 }
 
-function tickPomodoro() {
-    if (pomodoroRemaining <= 0) {
-        clearInterval(pomodoroIntervalId);
-        pomodoroIntervalId = null;
-        pomodoroRemaining = 0;
-        updatePomodoroDisplay();
-        if (typeof alert !== 'undefined') alert('Time is up!');
-        return;
+function enableButtonsForRunning(isRunning) {
+    var startBtn = document.getElementById('startTimer30');
+    var pauseBtn = document.getElementById('pauseTimer30');
+    if (startBtn) startBtn.disabled = isRunning;
+    if (pauseBtn) {
+        pauseBtn.disabled = !isRunning;
+        pauseBtn.textContent = isRunning ? 'Pause' : 'Resume';
     }
-    // Use core.tick to decrement consistently with tests
-    pomodoroRemaining = core.tick(pomodoroRemaining);
-    updatePomodoroDisplay();
 }
 
 function startTimer() {
-    if (pomodoroIntervalId) return; // already running
-    // initialize if needed
-    if (typeof pomodoroRemaining === 'undefined' || pomodoroRemaining === null) pomodoroRemaining = 30 * 60;
-    updatePomodoroDisplay();
-    pomodoroIntervalId = setInterval(tickPomodoro, 1000);
-    var startBtn = document.getElementById('startTimer30');
-    var pauseBtn = document.getElementById('pauseTimer30');
-    if (startBtn) startBtn.disabled = true;
-    if (pauseBtn) { pauseBtn.disabled = false; pauseBtn.textContent = 'Pause'; }
+    if (!timer) return;
+    timer.start();
+    enableButtonsForRunning(true);
 }
 
 function pauseTimer() {
-    if (pomodoroIntervalId) {
-        clearInterval(pomodoroIntervalId);
-        pomodoroIntervalId = null;
-        var pauseBtn = document.getElementById('pauseTimer30');
-        var startBtn = document.getElementById('startTimer30');
-        if (pauseBtn) pauseBtn.textContent = 'Resume';
-        if (startBtn) startBtn.disabled = false;
+    if (!timer) return;
+    if (timer.isRunning) {
+        timer.pause();
+        enableButtonsForRunning(false);
     } else {
-        // resume
-        startTimer();
-        var pauseBtn = document.getElementById('pauseTimer30');
-        if (pauseBtn) pauseBtn.textContent = 'Pause';
+        timer.start();
+        enableButtonsForRunning(true);
     }
 }
 
 function resetTimer() {
-    if (pomodoroIntervalId) {
-        clearInterval(pomodoroIntervalId);
-        pomodoroIntervalId = null;
-    }
-    pomodoroRemaining = 30 * 60;
-    updatePomodoroDisplay();
-    var pauseBtn = document.getElementById('pauseTimer30');
-    var startBtn = document.getElementById('startTimer30');
-    if (pauseBtn) { pauseBtn.textContent = 'Pause'; pauseBtn.disabled = false; }
-    if (startBtn) startBtn.disabled = false;
+    if (!timer) return;
+    timer.reset();
+    enableButtonsForRunning(false);
 }
 
 function setTimerDuration(seconds) {
-    // stop any running timer and set remaining seconds
-    if (pomodoroIntervalId) {
-        clearInterval(pomodoroIntervalId);
-        pomodoroIntervalId = null;
-    }
-    pomodoroRemaining = Math.max(0, Math.floor(seconds));
-    updatePomodoroDisplay();
-    var startBtn = document.getElementById('startTimer30');
-    var pauseBtn = document.getElementById('pauseTimer30');
-    if (startBtn) startBtn.disabled = false;
-    if (pauseBtn) { pauseBtn.textContent = 'Pause'; pauseBtn.disabled = true; }
+    if (!timer) return;
+    timer.setDuration(seconds);
+    enableButtonsForRunning(false);
 }
 
 function setFiveMinuteTimer() {
     setTimerDuration(5 * 60);
 }
 
-// Initialize display on load
+// Initialize on DOM ready
 document.addEventListener('DOMContentLoaded', function () {
-    updatePomodoroDisplay();
+    if (!TimerClass) return;
+    timer = new TimerClass({
+        duration: 30 * 60,
+        onTick: function (seconds) { updateDisplay(seconds); },
+        onComplete: function () { if (typeof alert !== 'undefined') alert('Time is up!'); }
+    });
+    // initial render
+    updateDisplay(timer.remaining);
+    enableButtonsForRunning(false);
+    // expose global functions for existing inline handlers
+    window.startTimer = startTimer;
+    window.pauseTimer = pauseTimer;
+    window.resetTimer = resetTimer;
+    window.setFiveMinuteTimer = setFiveMinuteTimer;
 });
