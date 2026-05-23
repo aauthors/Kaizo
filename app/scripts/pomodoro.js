@@ -2,10 +2,17 @@
 var pomodoroRemaining = 30 * 60; // seconds
 var pomodoroIntervalId = null;
 
-function formatTime(seconds) {
-    var m = Math.floor(seconds / 60);
-    var s = seconds % 60;
-    return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+// Try to load pure core logic (works in Node tests) or use browser-global
+var core;
+if (typeof module !== 'undefined' && module.exports) {
+    try { core = require('./pomodoroCore'); } catch (e) { core = null; }
+}
+if (!core && typeof window !== 'undefined' && window.pomodoroCore) core = window.pomodoroCore;
+if (!core) {
+    core = {
+        formatTime: function (seconds) { var m = Math.floor(seconds / 60); var s = seconds % 60; return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0'); },
+        tick: function (secondsRemaining) { var s = Math.max(0, Math.floor(secondsRemaining)); if (s <= 0) return 0; return s - 1; }
+    };
 }
 
 function getPomodoroDisplay() {
@@ -15,7 +22,7 @@ function getPomodoroDisplay() {
 function updatePomodoroDisplay() {
     var el = getPomodoroDisplay();
     if (!el) return;
-    el.innerHTML = formatTime(Math.max(0, pomodoroRemaining));
+    el.innerHTML = core.formatTime(Math.max(0, pomodoroRemaining));
 }
 
 function tickPomodoro() {
@@ -24,10 +31,11 @@ function tickPomodoro() {
         pomodoroIntervalId = null;
         pomodoroRemaining = 0;
         updatePomodoroDisplay();
-        alert('Time is up!');
+        if (typeof alert !== 'undefined') alert('Time is up!');
         return;
     }
-    pomodoroRemaining--;
+    // Use core.tick to decrement consistently with tests
+    pomodoroRemaining = core.tick(pomodoroRemaining);
     updatePomodoroDisplay();
 }
 
@@ -40,7 +48,7 @@ function startTimer() {
     var startBtn = document.getElementById('startTimer30');
     var pauseBtn = document.getElementById('pauseTimer30');
     if (startBtn) startBtn.disabled = true;
-    if (pauseBtn) pauseBtn.disabled = false;
+    if (pauseBtn) { pauseBtn.disabled = false; pauseBtn.textContent = 'Pause'; }
 }
 
 function pauseTimer() {
