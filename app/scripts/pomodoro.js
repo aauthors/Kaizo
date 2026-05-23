@@ -80,6 +80,24 @@ function resetTimer() {
     if (startBtn) startBtn.disabled = false;
 }
 
+function setTimerDuration(seconds) {
+    // stop any running timer and set remaining seconds
+    if (pomodoroIntervalId) {
+        clearInterval(pomodoroIntervalId);
+        pomodoroIntervalId = null;
+    }
+    pomodoroRemaining = Math.max(0, Math.floor(seconds));
+    updatePomodoroDisplay();
+    var startBtn = document.getElementById('startTimer30');
+    var pauseBtn = document.getElementById('pauseTimer30');
+    if (startBtn) startBtn.disabled = false;
+    if (pauseBtn) { pauseBtn.textContent = 'Pause'; pauseBtn.disabled = true; }
+}
+
+function setFiveMinuteTimer() {
+    setTimerDuration(5 * 60);
+}
+
 // Initialize display on load
 document.addEventListener('DOMContentLoaded', function () {
     updatePomodoroDisplay();
