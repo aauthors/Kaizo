@@ -32,7 +32,9 @@ function enableButtonsForRunning(isRunning) {
     var pauseBtn = document.getElementById('pauseTimer30');
     if (startBtn) startBtn.disabled = isRunning;
     if (pauseBtn) {
-        pauseBtn.disabled = !isRunning;
+        // allow resume when paused if there is remaining time and it's not at the initial duration
+        var canResume = !!timer && timer.remaining > 0 && timer.remaining !== timer.initial;
+        pauseBtn.disabled = isRunning ? false : !canResume;
         pauseBtn.textContent = isRunning ? 'Pause' : 'Resume';
     }
 }
@@ -69,6 +71,11 @@ function setTimerDuration(seconds) {
 function setFiveMinuteTimer() {
     setTimerDuration(5 * 60);
 }
+// expose global functions immediately so inline handlers don't error before DOMContentLoaded
+window.startTimer = startTimer;
+window.pauseTimer = pauseTimer;
+window.resetTimer = resetTimer;
+window.setFiveMinuteTimer = setFiveMinuteTimer;
 
 // Initialize on DOM ready
 document.addEventListener('DOMContentLoaded', function () {
@@ -81,9 +88,5 @@ document.addEventListener('DOMContentLoaded', function () {
     // initial render
     updateDisplay(timer.remaining);
     enableButtonsForRunning(false);
-    // expose global functions for existing inline handlers
-    window.startTimer = startTimer;
-    window.pauseTimer = pauseTimer;
-    window.resetTimer = resetTimer;
-    window.setFiveMinuteTimer = setFiveMinuteTimer;
+    // global handlers already attached above; nothing to do here
 });
